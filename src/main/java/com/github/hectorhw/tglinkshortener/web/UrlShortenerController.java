@@ -1,5 +1,6 @@
 package com.github.hectorhw.tglinkshortener.web;
 
+import com.github.hectorhw.tglinkshortener.bot.Bot;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,9 @@ public class UrlShortenerController {
     @Autowired
     private DatabaseController db;
 
+    @Autowired
+    private Bot bot;
+
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity getUrl(@PathVariable String id){
@@ -26,7 +30,7 @@ public class UrlShortenerController {
             Optional<DatabaseEntry> dbEntry = db.getData(id);
             if (dbEntry.isEmpty()) throw new NoSuchElementException();
 
-            return Redirect(dbEntry.get());
+            return Redirect(dbEntry.get().getTargetUrl());
 
         }catch (IllegalArgumentException | NoSuchElementException e ){
             return ResponseEntity.ok("404: not found");
@@ -34,9 +38,15 @@ public class UrlShortenerController {
 
     }
 
-    private ResponseEntity Redirect(DatabaseEntry databaseEntry) {
+    @RequestMapping(method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity basePathRedirect(){
+        return Redirect("https://t.me/" + bot.getBotUsername());
+    }
+
+    private ResponseEntity Redirect(String url) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create(databaseEntry.getTargetUrl()));
+        headers.setLocation(URI.create(url));
         return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
     }
 
