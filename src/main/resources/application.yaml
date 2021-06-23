@@ -2,4 +2,4 @@ bot:
   name: ${BOT_NAME}
   token: ${BOT_TOKEN}
 
-domain: "http://localhost:8080"
+domain: "https://tg-link-shortener.herokuapp.com/"
